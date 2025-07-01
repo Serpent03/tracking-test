@@ -1,7 +1,9 @@
+# template tracking a video
+
 import cv2
 import numpy as np
 
-cap = cv2.VideoCapture("v5.webm")
+cap = cv2.VideoCapture("v1.mp4")
 
 frame = None
 roi = cv2.imread("template2.png", cv2.IMREAD_ANYCOLOR)

@@ -1,3 +1,5 @@
+# CSRT algorithm implementation
+
 import cv2
 import sys
 import cv2.legacy
@@ -13,7 +15,7 @@ def selectroi(event, x, y, flags, param):
         # bbox = cv2.selectROI(frame, False)
 
 tracker = cv2.TrackerCSRT_create()
-video = cv2.VideoCapture("v1.mp4")
+video = cv2.VideoCapture("v4.mp4")
 
 cv2.namedWindow("window")
 cv2.namedWindow("roi")
@@ -45,6 +47,7 @@ while True:
         cv2.putText(frame, "Tracking failure detected", (100, 80),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
         bbox = cv2.selectROI(frame, False)
+        ok = tracker.init(frame, bbox)
 
     cv2.putText(frame, "CSRT", (100, 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 170, 50), 2)

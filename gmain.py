@@ -10,6 +10,7 @@ class LinkedList:
     def __init__(self):
         self.rear = None
         self.front = None
+        self.size = 0
     
     def push(self, coords):
         if self.rear is None:
@@ -18,6 +19,7 @@ class LinkedList:
         else:
             self.rear.next = Node(coords)
             self.rear = self.rear.next
+        self.size += 1
     
     def poll(self):
         coords = self.front.coords
@@ -26,7 +28,11 @@ class LinkedList:
             self.rear = None
         else:
             self.front = self.front.next
+        self.size -= 1
         return coords
+    
+    def getsize(self):
+        return self.size
     
     def isEmpty(self):
         return self.front == self.rear and self.front == None
@@ -55,17 +61,18 @@ def traversal(x, y, limx, limy, iters):
     bfs.push((x, y))
 
     org_colors = img[y][x]
-    tolerance = 2.5
+    tolerance = 2
     step_length = 2
 
     while not bfs.isEmpty() and iters > 0:
         _x, _y = bfs.poll()
-        visited.add(f'{_x}::{_y}')
+        visited.add((_x, _y))
         cv2.circle(img, (_x, _y), 1, (0, 0, 255), 1)
+        # print(bfs.getsize())
 
         for i in [[0, step_length], [0, -step_length], [step_length, 0], [-step_length, 0]]:
             ox, oy = i
-            if f"{ox + _x}::{oy + _y}" not in visited and ox + _x < limx and oy + _y < limy and ox + _x > 0 and oy + _y > 0:
+            if (ox + _x, oy + _y) not in visited and ox + _x < limx and oy + _y < limy and ox + _x > 0 and oy + _y > 0:
                 if inrange(org_colors, img[(oy + _y)][(ox + _x)], tolerance):
                     bfs.push((ox + _x, oy + _y))
         iters -= 1
@@ -74,11 +81,11 @@ def traversal(x, y, limx, limy, iters):
 def mouse_handle(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         print(x, y)
-        traversal(x, y, img.shape[1], img.shape[0], 128000)
+        traversal(x, y, img.shape[1], img.shape[0], 512000)
         cv2.imshow("window", img)
 
-
-img = cv2.imread("6.jpg", cv2.IMREAD_ANYCOLOR)
+img = cv2.imread("4.jpg", cv2.IMREAD_ANYCOLOR)
+img = cv2.resize(img, (500, 00))
 print(img.shape)
 
 blur = cv2.bilateralFilter(img, 7, 125, 125)
