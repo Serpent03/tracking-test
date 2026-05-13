@@ -1,8 +1,12 @@
 # CSRT algorithm implementation
 
+import time
+
 import cv2
-import sys
-import cv2.legacy
+
+ESCAPE_KEY = 27
+C_KEY = 99
+
 
 # Get the OpenCV version tuple
 w, h = 30, 20
@@ -15,7 +19,9 @@ def selectroi(event, x, y, flags, param):
         # bbox = cv2.selectROI(frame, False)
 
 tracker = cv2.TrackerCSRT_create()
-video = cv2.VideoCapture("v4.mp4")
+video = cv2.VideoCapture("v1.mp4")
+video_fps = video.get(cv2.CAP_PROP_FPS)
+ideal_delay = 1 / video_fps
 
 cv2.namedWindow("window")
 cv2.namedWindow("roi")
@@ -26,8 +32,13 @@ ok, frame = video.read()
 bbox = cv2.selectROI(frame, False)
 ok = tracker.init(frame, bbox)
 
+cv2.destroyAllWindows()
+cv2.namedWindow("window")
+cv2.namedWindow("roi")
+
 while True:
-    # Read a new frame
+    loop_start = time.time()
+    
     cv2.setMouseCallback("window", selectroi)
     ok, frame = video.read()
     if not ok:
@@ -35,7 +46,6 @@ while True:
     
     timer = cv2.getTickCount()
     ok, bbox = tracker.update(frame)
-    fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
 
     if ok:
         # Tracking success
@@ -52,16 +62,28 @@ while True:
     cv2.putText(frame, "CSRT", (100, 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 170, 50), 2)
 
-    cv2.putText(frame, "FPS : " + str(int(fps)), (100, 50),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 170, 50), 2)
-
     cv2.imshow("window", frame)
-    cv2.imshow("roi", bbox)
+
+    x, y, w, h = bbox
+    cv2.imshow("roi", frame[y:y+h, x:x+w])
+
+    loop_end = time.time() - loop_start
+    fps_wait_time = max(1, int(ideal_delay - loop_end) * 1000)
 
     # Exit if ESC pressed
-    k = cv2.waitKey(1) & 0xff
-    if k == 27:
+    k = cv2.waitKey(33) & 0xff
+    if k == ESCAPE_KEY:
         break
+
+    # Reselect tracking target if `C` is pressed
+    if k == C_KEY:
+      cv2.destroyAllWindows()
+      bbox = cv2.selectROI(frame, False)
+      ok = tracker.init(frame, bbox)
+      
+      cv2.destroyAllWindows()
+      cv2.namedWindow("window")
+      cv2.namedWindow("roi")
 
 video.release()
 cv2.destroyAllWindows()
